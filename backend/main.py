@@ -5,11 +5,11 @@ import uvicorn
 import os
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from database import get_db_connection
-from auth import hash_password, verify_password, create_access_token, get_current_user, get_optional_current_user
-from scraper import scrape_job_page
-from predictor import predictor
-from resume_analyzer import extract_text_from_pdf, analyze_resume_with_gemini
+from backend.database import get_db_connection
+from backend.auth import hash_password, verify_password, create_access_token, get_current_user, get_optional_current_user
+from backend.scraper import scrape_job_page
+from backend.predictor import predictor
+from backend.resume_analyzer import extract_text_from_pdf, analyze_resume_with_gemini
 
 app = FastAPI()
 
