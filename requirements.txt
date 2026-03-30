@@ -3,11 +3,8 @@ uvicorn
 pyjwt
 requests
 beautifulsoup4
-pandas
-scikit-learn
 pydantic
 python-multipart
 python-dotenv
-playwright
 PyPDF2
 google-generativeai
