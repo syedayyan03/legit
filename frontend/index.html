@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LEGIT | Job Safety Platform</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+		<link rel="icon" type="image/svg+xml" href="favicon.svg">
+</head>
+<body>
+    <nav>
+        <div class="logo">LEGIT</div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="#features">Features</a>
+            <a href="login.html" class="btn-login">Login</a>
+            <a href="signup.html" class="btn-signup">Signup</a>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <h1>Check Job Links Before You Apply</h1>
+        <p>LEGIT analyzes job links and detects potential job scams using advanced machine learning.</p>
+        
+        <div class="detector-container glass">
+            <div class="input-group">
+                <input type="text" id="jobUrl" placeholder="Paste job link here (e.g., job portal, company career page)">
+                <button class="btn-analyze" onclick="analyzeJob()">Analyze Job</button>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="features">
+        <div class="feature-card glass">
+            <i class="fas fa-shield-alt"></i>
+            <h3>Fake Job Detector</h3>
+            <p>Analyzes job descriptions and metadata to identify fraudulent listings with high accuracy.</p>
+        </div>
+        <div class="feature-card glass">
+            <i class="fab fa-google"></i>
+            <h3>Form Scam Analyzer</h3>
+            <p>Safely inspects Google Forms and documents to see what sensitive data they are collecting.</p>
+        </div>
+        <div class="feature-card glass">
+            <i class="fas fa-building-circle-check"></i>
+            <h3>Company Legitimacy</h3>
+            <p>Verifies company identity and cross-checks with official registers and reviews.</p>
+        </div>
+        <div class="feature-card glass">
+            <i class="fas fa-link-slash"></i>
+            <h3>Phishing Detection</h3>
+            <p>Detects spoofed domains and malicious links designed to steal your credentials.</p>
+        </div>
+    </section>
+
+    <!-- Result Modal -->
+    <div id="resultModal" class="modal">
+        <div class="modal-content glass">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <div id="modalLoading" style="text-align: center; display: none;">
+                <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+                <p style="margin-top: 1rem;">Analyzing job link...</p>
+            </div>
+            <div id="modalResult" style="display: none;">
+                <div class="result-status" id="statusText">Fake Job</div>
+                <div class="result-confidence" id="confidenceText">Confidence: 91%</div>
+                
+                <div class="result-section">
+                    <h4>Application Type</h4>
+                    <p id="appType">Website</p>
+                </div>
+
+                <div class="result-section">
+                    <h4>Risk Factors</h4>
+                    <div id="riskFactors"></div>
+                </div>
+
+                <div class="result-section">
+                    <h4>Data Being Collected</h4>
+                    <div id="dataCollected"></div>
+                </div>
+
+                <div class="result-section">
+                    <h4>Explanation</h4>
+                    <p id="explanation" style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

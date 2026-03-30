@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | LEGIT</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+		<link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <style>
+        body { display: flex; height: 100vh; overflow: hidden; }
+        
+        .sidebar {
+            width: 280px;
+            height: 100%;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+        }
+
+        .sidebar .logo { margin-bottom: 3rem; }
+
+        .sidebar-menu { flex: 1; }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .menu-item i { margin-right: 1rem; width: 20px; text-align: center; }
+        .menu-item.active { background: var(--primary); color: white; }
+        .menu-item:hover:not(.active) { background: rgba(255, 255, 255, 0.05); color: var(--text-main); }
+
+        .coming-soon-badge {
+            font-size: 0.65rem;
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--primary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: auto;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 3rem 5%;
+            overflow-y: auto;
+            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.05), transparent);
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        .dashboard-card {
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        .history-table th {
+            text-align: left;
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .history-table td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .badge-fake { color: var(--danger); font-weight: 600; }
+        .badge-real { color: var(--success); font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="sidebar glass">
+        <div class="logo">LEGIT</div>
+        <div class="sidebar-menu">
+            <a href="dashboard.html" class="menu-item active"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="detector.html" class="menu-item"><i class="fas fa-search"></i> Fake Job Analyzer</a>
+            <a href="#" class="menu-item" id="resumeMenuItem" onclick="switchSection('resume')"><i class="fas fa-file-invoice"></i> Resume Analyzer</a>
+            <a href="#" class="menu-item"><i class="fas fa-comments"></i> Interview Q&amp;A</a>
+            <a href="dashboard.html" class="menu-item"><i class="fas fa-history"></i> Scan History</a>
+        </div>
+        <div class="sidebar-footer">
+            <a href="#" onclick="logout()" class="menu-item"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="dashboard-header">
+            <div>
+                <h1 id="welcomeUser">Welcome, User</h1>
+                <p style="color:var(--text-muted)">Your job safety overview</p>
+            </div>
+        </div>
+
+        <div id="detector-section">
+            <div class="dashboard-card glass">
+                <h3>Recent Scan History</h3>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Job URL</th>
+                            <th>Status</th>
+                            <th>Confidence</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody">
+                        <!-- History rows will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="resume-section" style="display: none;">
+            <div class="dashboard-card glass">
+                <h3>Resume Insight Analyzer</h3>
+                <p style="color:var(--text-muted); margin-bottom: 1.5rem;">Upload your resume (PDF/TXT) to get AI-powered feedback, scoring, and skill analysis.</p>
+                
+                <div style="border: 2px dashed var(--border); padding: 3rem; border-radius: 12px; text-align: center; cursor: pointer; transition: all 0.3s;" id="dropZone">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                    <p id="fileName">Drag & drop your resume here or click to select</p>
+                    <input type="file" id="resumeFile" accept=".pdf,.txt" style="display: none;">
+                    <button id="selectFileBtn" class="btn-primary" style="margin-top: 1.5rem;" onclick="event.stopPropagation(); document.getElementById('resumeFile').click()">Select File</button>
+                    <button id="analyzeBtn" class="btn-primary" style="margin-top: 1.5rem; display: none; background: #10b981;" onclick="event.stopPropagation(); triggerResumeAnalysis()">Analyze Resume</button>
+                </div>
+
+                <div id="resumeLoading" style="display: none; text-align: center; margin-top: 2rem;">
+                    <div class="loader" style="margin: 0 auto 1rem;"></div>
+                    <p>AI is analyzing your profile... This may take a moment.</p>
+                </div>
+
+                <div id="resumeResult" style="display: none; margin-top: 3rem; animation: slideUp 0.5s ease;">
+                    <div style="display: flex; gap: 2rem; align-items: center; margin-bottom: 3rem; padding: 2rem; background: rgba(255,255,255,0.03); border-radius: 20px;">
+                        <div style="flex: 0 0 160px; height: 160px; position: relative;">
+                            <svg viewBox="0 0 36 36" style="width: 100%; height: 100%;">
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2" />
+                                <path id="resumeProgressCircle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--primary)" stroke-width="2" stroke-dasharray="0, 100" />
+                            </svg>
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                                <div id="resumeOverallScore" style="font-size: 2.5rem; font-weight: 800; color: var(--text-main);">0</div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">Total Score</div>
+                            </div>
+                        </div>
+                        <div style="flex: 1;">
+                            <h4 style="margin-bottom: 0.5rem;"><i class="fas fa-id-card"></i> Profile Snapshot</h4>
+                            <p id="resumeSummary" style="color: var(--text-muted); line-height: 1.6; font-size: 0.95rem;"></p>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                         <div>
+                            <h4 style="margin-bottom: 1.5rem;">Diagnostic Breakdown</h4>
+                            <div class="score-bar-group" style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem;">
+                                        <span>Skill Match</span>
+                                        <span id="scoreSkill">0%</span>
+                                    </div>
+                                    <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                                        <div id="barSkill" style="height: 100%; background: var(--primary); width: 0%; transition: width 1s ease;"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem;">
+                                        <span>Experience Depth</span>
+                                        <span id="scoreExp">0%</span>
+                                    </div>
+                                    <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                                        <div id="barExp" style="height: 100%; background: #fbbf24; width: 0%; transition: width 1s ease;"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.4rem;">
+                                        <span>Formatting & Clarity</span>
+                                        <span id="scoreFormat">0%</span>
+                                    </div>
+                                    <div style="height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden;">
+                                        <div id="barFormat" style="height: 100%; background: #10b981; width: 0%; transition: width 1s ease;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="risk-card" style="border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05);">
+                            <h4 style="color: var(--danger);"><i class="fas fa-exclamation-circle"></i> Critical Gaps</h4>
+                            <ul id="resumeGaps" style="color: var(--text-muted); font-size: 0.9rem; padding-left: 1.2rem; margin-top: 0.5rem;"></ul>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <div class="risk-card">
+                            <h4 style="color: var(--success);"><i class="fas fa-star"></i> Key Strengths</h4>
+                            <ul id="resumeStrengths" style="color: var(--text-muted); font-size: 0.9rem; padding-left: 1.2rem; margin-top: 0.5rem;"></ul>
+                        </div>
+                        <div class="risk-card">
+                            <h4 style="color: var(--primary);"><i class="fas fa-lightbulb"></i> Strategic Advice</h4>
+                            <ul id="resumeAdvice" style="color: var(--text-muted); font-size: 0.9rem; padding-left: 1.2rem; margin-top: 0.5rem;"></ul>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 3rem;">
+                        <h4>Extracted Professional Skills</h4>
+                        <div style="margin-top: 1rem;">
+                            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Hard Skills</div>
+                            <div id="resumeTechSkills" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;"></div>
+                            
+                            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Soft Skills</div>
+                            <div id="resumeSoftSkills" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (currentUser) {
+                document.getElementById('welcomeUser').innerText = `Welcome, ${currentUser.name}`;
+                loadHistory();
+                switchSection('history'); // We'll show history by default
+            }
+        });
+
+        async function loadHistory() {
+            try {
+                const response = await fetch(`${API_URL}/scan-history`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const history = await response.json();
+                
+                const tbody = document.getElementById('historyBody');
+                tbody.innerHTML = history.length === 0 ? '<tr><td colspan="4" style="text-align:center">No scans yet.</td></tr>' : '';
+                
+                history.forEach(scan => {
+                    const row = document.createElement('tr');
+                    const statusClass = scan.prediction === "Fake Job" ? "badge-fake" : "badge-real";
+                    row.innerHTML = `
+                        <td style="max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${scan.url}</td>
+                        <td class="${statusClass}">${scan.prediction}</td>
+                        <td>${scan.confidence}</td>
+                        <td>${new Date(scan.timestamp).toLocaleDateString()}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (e) {
+                console.error("History load failed", e);
+            }
+        }
+
+        function switchSection(section) {
+            const detectorSec = document.getElementById('detector-section');
+            const resumeSec = document.getElementById('resume-section');
+            const headerText = document.querySelector('.dashboard-header p');
+            
+            detectorSec.style.display = (section === 'detector' || section === 'history') ? 'block' : 'none';
+            resumeSec.style.display = section === 'resume' ? 'block' : 'none';
+            
+            // Update header text for context
+            if (headerText) {
+                headerText.innerText = (section === 'detector' || section === 'history') ? 'Your job safety overview' : 'AI-powered resume insights';
+            }
+            
+            // Update active menu item
+            const menuItems = document.querySelectorAll('.sidebar-menu .menu-item');
+            menuItems.forEach(item => item.classList.remove('active'));
+            
+            if (section === 'history') {
+                menuItems[0].classList.add('active'); // Dashboard
+            } else if (section === 'resume') {
+                document.getElementById('resumeMenuItem').classList.add('active');
+            }
+        }
+
+        // Handle File Selection
+        document.getElementById('resumeFile').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || "Drag & drop your resume here or click to select";
+            document.getElementById('fileName').innerText = fileName;
+            
+            const btnAnalyze = document.getElementById('analyzeBtn');
+            const btnSelect = document.getElementById('selectFileBtn');
+            
+            if (e.target.files[0]) {
+                btnAnalyze.style.display = 'inline-block';
+                btnSelect.style.display = 'none';
+            } else {
+                btnAnalyze.style.display = 'none';
+                btnSelect.style.display = 'inline-block';
+            }
+        });
+
+        // Drop Zone Logic
+        const dropZone = document.getElementById('dropZone');
+        dropZone.onclick = () => document.getElementById('resumeFile').click();
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.style.borderColor = 'var(--primary)'; };
+        dropZone.ondragleave = () => { dropZone.style.borderColor = 'var(--border)'; };
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--border)';
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                document.getElementById('fileName').innerText = file.name;
+                document.getElementById('resumeFile').files = e.dataTransfer.files;
+                
+                document.getElementById('analyzeBtn').style.display = 'inline-block';
+                document.getElementById('selectFileBtn').style.display = 'none';
+            }
+        };
+
+        // Manual triggers analysis with a realistic loading delay
+        window.triggerResumeAnalysis = function() {
+            const file = document.getElementById('resumeFile').files[0];
+            if (!file) {
+                showPopup("No File", "Please select a resume file first.", "warning");
+                return;
+            }
+            
+            const loading = document.getElementById('resumeLoading');
+            const result = document.getElementById('resumeResult');
+            
+            loading.style.display = 'block';
+            result.style.display = 'none';
+            document.getElementById('analyzeBtn').style.display = 'none';
+            
+            // Artificial delay to show the "AI Processing" UI so user knows it's reading
+            setTimeout(() => {
+                analyzeResumeAction(file);
+            }, 1500);
+        };
+
+        async function analyzeResumeAction(file) {
+            if (!file) return;
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch(`${API_URL}/analyze-resume`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayResumeResult(data);
+                } else {
+                    document.getElementById('resumeLoading').style.display = 'none';
+                    document.getElementById('analyzeBtn').style.display = 'inline-block';
+                    showPopup("Analysis Error", data.detail || "Failed to analyze resume.", "error");
+                }
+            } catch (e) {
+                document.getElementById('resumeLoading').style.display = 'none';
+                document.getElementById('analyzeBtn').style.display = 'inline-block';
+                showPopup("Connection Error", "Server error. Is the backend running?", "error");
+            }
+        }
+
+        function displayResumeResult(data) {
+            document.getElementById('resumeLoading').style.display = 'none';
+            document.getElementById('resumeResult').style.display = 'block';
+            
+            // Core Data
+            document.getElementById('resumeOverallScore').innerText = data.overall_score;
+            document.getElementById('resumeSummary').innerText = data.summary;
+            
+            // Progress Circle
+            document.getElementById('resumeProgressCircle').setAttribute('stroke-dasharray', `${data.overall_score}, 100`);
+            
+            // Categorical Scores
+            const cats = data.categorical_scores;
+            document.getElementById('scoreSkill').innerText = `${cats.skill_match}%`;
+            document.getElementById('barSkill').style.width = `${cats.skill_match}%`;
+            
+            document.getElementById('scoreExp').innerText = `${cats.experience_depth}%`;
+            document.getElementById('barExp').style.width = `${cats.experience_depth}%`;
+            
+            document.getElementById('scoreFormat').innerText = `${cats.formatting_clarity}%`;
+            document.getElementById('barFormat').style.width = `${cats.formatting_clarity}%`;
+            
+            // Lists
+            document.getElementById('resumeStrengths').innerHTML = data.key_strengths.map(s => `<li>${s}</li>`).join('');
+            document.getElementById('resumeGaps').innerHTML = data.critical_gaps.map(g => `<li>${g}</li>`).join('');
+            document.getElementById('resumeAdvice').innerHTML = data.strategic_advice.map(a => `<li>${a}</li>`).join('');
+            
+            // Skills
+            const techSkills = document.getElementById('resumeTechSkills');
+            techSkills.innerHTML = data.technical_skills.map(s => `<span class="data-tag">${s}</span>`).join('');
+            
+            const softSkills = document.getElementById('resumeSoftSkills');
+            softSkills.innerHTML = data.soft_skills.map(s => `<span class="data-tag" style="background:rgba(16,185,129,0.1); color:#10b981; border:1px solid rgba(16,185,129,0.2);">${s}</span>`).join('');
+        }
+    </script>
+</body>
+</html>
